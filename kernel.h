@@ -1,6 +1,7 @@
 class Kernel {
 public:
   const Lattice& lat;
+  const std::string description = "wilson flow";
 
   Kernel
   (
@@ -51,6 +52,9 @@ public:
                     const bool is_even,
                     const uint mu ) const& {
     ScalarField res(lat,2);
+#ifdef _OPENMP
+#pragma omp parallel for
+#endif
     for(Idx gi=0; gi<lat.vol; ++gi){
       const Coord x(lat, gi);
       if(x.is_even()==is_even) res(gi,mu) = grad( theta, x, mu );

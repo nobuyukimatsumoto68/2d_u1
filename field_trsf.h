@@ -19,6 +19,18 @@ public:
     assert(eps<0.5);
   };
 
+  std::string info() const& {
+    std::stringstream ss;
+    ss << std::scientific << std::setprecision(15);
+
+    ss << "--- field transformation info ---" << std::endl;
+    ss << "eps = " << eps << std::endl;
+    ss << "--------------------";
+
+    return ss.str();
+  }
+
+
   ScalarField operator()
   (
    const ScalarField& theta,
@@ -71,6 +83,9 @@ public:
    ) const& {
     dS_Fstar = dS;
 
+#ifdef _OPENMP
+#pragma omp parallel for
+#endif
     for(Idx gi=0; gi<lat.vol; ++gi) { // y
       const Coord y(lat,gi);
       for(uint nu=0; nu<2; ++nu){
@@ -100,6 +115,9 @@ public:
    const uint mu
    ) const& {
     double res = 1.0;
+// #ifdef _OPENMP
+// #pragma omp parallel for
+// #endif
     for(Idx gi=0; gi<lat.vol; ++gi) { // y
       const Coord x(lat,gi);
       if(x.is_even()==is_even) res *= 1.0+eps*Stilde.hess(theta,x,mu,x,mu);
@@ -143,6 +161,9 @@ public:
    const uint mu
    ) const& {
     star(dSp, dS, theta, is_even,mu);
+#ifdef _OPENMP
+#pragma omp parallel for
+#endif
     for(Idx gi=0; gi<lat.vol; ++gi) {
       const Coord y(lat,gi);
       for(uint nu=0; nu<2; ++nu){

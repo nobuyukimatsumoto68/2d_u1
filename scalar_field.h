@@ -82,24 +82,16 @@ public:
   }
 
   void proj_u1(){
+#ifdef _OPENMP
+#pragma omp parallel for
+#endif
     for(Idx idx=0; idx<size; ++idx) (*this)[idx] = proj_mPi_Pi( (*this)[idx] );
   }
 
-  void shift(){
-    ScalarField shifted(*this);
-    for(Idx gi=0; gi<lat.vol; ++gi) {
-      const Coord y(lat,gi);
-      Coord yp(y);
-      yp.shift(0);
-      for(uint nu=0; nu<2; ++nu){
-        shifted(y,nu) = (*this)(yp,nu);
-      }
-    }
-
-    *this = shifted;
-  }
-
   ScalarField& operator+=( const ScalarField& other ){
+// #ifdef _OPENMP
+// #pragma omp parallel for
+// #endif
     for(Idx gi=0; gi<size; ++gi) (*this)[gi] += other[gi];
     return *this;
   }

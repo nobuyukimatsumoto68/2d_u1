@@ -5,10 +5,13 @@ public:
   const FieldTrsf& trsf;
   const Kernel& kernel;
   Rnd& rnd_theta;
+  const double eps_MD;
+  const int nsteps_MD;
   const int seed;
-  const int nsteps;
+  const int nsteps_flow;
   std::uniform_real_distribution<> rand01;
   std::mt19937_64 rnd;
+  const std::string integrator = "leapfrog";
 
   int get_seed(const int seed_, const bool is_random){
     int res = seed_;
@@ -26,8 +29,10 @@ public:
    const FieldTrsf& trsf_,
    const Kernel& kernel_,
    Rnd& rnd_theta_,
+   const double eps_MD_,
+   const int nsteps_MD_,
    const int seed_,
-   const int nsteps_ = 1,
+   const int nsteps_flow_ = 1,
    const bool is_random_ = false
    )
     : lat(lat_)
@@ -35,8 +40,10 @@ public:
     , trsf(trsf_)
     , kernel(kernel_)
     , rnd_theta(rnd_theta_)
+    , eps_MD(eps_MD_)
+    , nsteps_MD(nsteps_MD_)
     , seed(get_seed(seed_,is_random_))
-    , nsteps(nsteps_)
+    , nsteps_flow(nsteps_flow_)
     , rand01(0.0,1.0)
   {
     assert(&lat==&S.lat);
@@ -47,6 +54,22 @@ public:
     rnd.seed( gen() );
   };
 
+  std::string info() const& {
+    std::stringstream ss;
+    ss << std::scientific << std::setprecision(15);
+
+    ss << "--- ft-hmc info ---" << std::endl;
+    ss << "kernel = " << kernel.description << std::endl;
+    ss << "eps_flow = " << trsf.eps << std::endl;
+    ss << "nsteps_flow = " << nsteps_flow << std::endl;
+    ss << "eps_MD = " << eps_MD  << std::endl;
+    ss << "nsteps_MD = " << nsteps_MD  << std::endl;
+    ss << "integrator = " << integrator << std::endl;
+    ss << "seed = " << seed << std::endl;
+    ss << "--------------------";
+
+    return ss.str();
+  }
 
   void leapfrog
   (
@@ -58,7 +81,7 @@ public:
     ScalarField dS_V(dS_U);
 
     ScalarField theta_V(theta_U);
-    for(int i=nsteps-1; i>=0; --i){
+    for(int i=nsteps_flow-1; i>=0; --i){
       for(int mu=lat.dim-1; mu>=0; --mu) {
         bool is_even = false;
         theta_V = trsf.inv(theta_V,is_even,mu);
@@ -78,7 +101,7 @@ public:
     theta_V.proj_u1();
 
     theta_U = theta_V;
-    for(int i=0; i<nsteps; ++i){
+    for(int i=0; i<nsteps_flow; ++i){
       for(uint mu=0; mu<lat.dim; ++mu) {
         bool is_even = true;
         theta_U = trsf(theta_U,is_even,mu);
@@ -90,7 +113,7 @@ public:
     dS_U = S.grad(theta_U);
 
     theta_V = theta_U;
-    for(int i=nsteps-1; i>=0; --i){
+    for(int i=nsteps_flow-1; i>=0; --i){
       for(int mu=lat.dim-1; mu>=0; --mu) {
         bool is_even = false;
         theta_V = trsf.inv(theta_V,is_even,mu);
@@ -136,7 +159,7 @@ public:
     res += S(theta_U);
 
     ScalarField theta_V(theta_U);
-    for(int i=nsteps-1; i>=0; --i){
+    for(int i=nsteps_flow-1; i>=0; --i){
       for(int mu=lat.dim-1; mu>=0; --mu) {
         bool is_even = false;
         theta_V = trsf.inv(theta_V,is_even,mu);
@@ -163,8 +186,7 @@ public:
   }
 
   void evolve(ScalarField& theta_U0,
-              bool& is_accept, double& dH,
-              const double eps_MD, const int nsteps_MD
+              bool& is_accept, double& dH
               ) & {
     ScalarField theta_U( theta_U0 );
     ScalarField pi = gen_gauss_pi();

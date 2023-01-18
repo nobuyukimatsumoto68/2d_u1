@@ -3,9 +3,12 @@ public:
   const Lattice& lat;
   const WilsonAction& S;
   Rnd& rnd_theta;
+  const double eps;
+  const int nsteps;
   const int seed;
   std::uniform_real_distribution<> rand01;
   std::mt19937_64 rnd;
+  const std::string integrator = "leapfrog";
 
   int get_seed(const int seed_, const bool is_random){
     int res = seed_;
@@ -21,12 +24,16 @@ public:
    const Lattice& lat_,
    const WilsonAction& S_,
    Rnd& rnd_theta_,
+   const double eps_,
+   const int nsteps_,
    const int seed_,
    const bool is_random_ = false
    )
     : lat(lat_)
     , S(S_)
     , rnd_theta(rnd_theta_)
+    , eps(eps_)
+    , nsteps(nsteps_)
     , seed(get_seed(seed_,is_random_))
     , rand01(0.0,1.0)
   {
@@ -37,6 +44,20 @@ public:
     gen.seed(seed);
     rnd.seed( gen() );
   };
+
+  std::string info() const& {
+    std::stringstream ss;
+    ss << std::scientific << std::setprecision(15);
+
+    ss << "--- hmc info ---" << std::endl;
+    ss << "eps = " << eps  << std::endl;
+    ss << "nsteps = " << nsteps  << std::endl;
+    ss << "integrator = " << integrator << std::endl;
+    ss << "seed = " << seed << std::endl;
+    ss << "--------------------";
+
+    return ss.str();
+  }
 
   void leapfrog
   (
@@ -72,8 +93,7 @@ public:
   }
 
   void evolve(ScalarField& theta0,
-              bool& is_accept, double& dH,
-              const double eps, const int nsteps) & {
+              bool& is_accept, double& dH) & {
     ScalarField theta(theta0);
     ScalarField pi = gen_gauss_pi();
 
