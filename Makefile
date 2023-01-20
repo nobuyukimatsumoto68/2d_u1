@@ -1,5 +1,5 @@
 CXX		= g++
-CXXFLAGS	= -O3 -Wall -MMD -MP -std=c++17 -fopenmp
+CXXFLAGS	= -O3 -Wall -MMD -MP -std=c++17 # -fopenmp
 # CXXFLAGS	= -O1 -Wall -MMD -MP -std=c++17 -pg
 PROG		= a.out
 SRC		= main.c

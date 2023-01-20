@@ -8,7 +8,9 @@
 #include <vector>
 #include <string>
 #include <filesystem>
+#ifdef _OPENMP
 #include <omp.h>
+#endif
 
 using Complex = std::complex<double>;
 constexpr Complex I = Complex(0,1);
