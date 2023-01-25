@@ -41,17 +41,17 @@ const std::vector<uint> lattice_size = std::vector<uint>{8,8};
 // ---
 const std::string dir = "./results/";
 // ----
-const double stot = 1.0;
-const int nsteps = 6;
-const double eps = stot/nsteps;
-const int nconf = 500;
+const double stot = 1.0; // total HMC time
+const int nsteps = 6; // #steps for HMC
+const double eps = stot/nsteps; // time increment for HMC
+const int nconf = 500; // #config
 // ----
 const int seed_1 = 1;
 const int seed_2 = 2;
 
 #if IS_FTHMC
-const double eps_W = 0.2;
-const int nsteps_W = 1;
+const double eps_W = 0.2; // time increment in the field transformation direction // <0.5
+const int nsteps_W = 1; // #steps in the field transformation direction
 #endif
 
 
@@ -94,7 +94,7 @@ int main(){
   std::clog << rnd.info() << std::endl;
 
 
-#if ISw_FTHMC
+#if IS_FTHMC
   Kernel ker(lat);
   FieldTrsf trsf(lat,ker,eps_W);
   FT_HMC ft_hmc(lat,Sw,trsf,ker,rnd,eps,nsteps,seed_2,nsteps_W);
