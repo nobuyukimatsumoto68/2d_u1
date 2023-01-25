@@ -81,7 +81,7 @@ public:
     return ss.str();
   }
 
-  void proj_u1(){
+  void proj_u1(){ // see util.h
 #ifdef _OPENMP
 #pragma omp parallel for
 #endif

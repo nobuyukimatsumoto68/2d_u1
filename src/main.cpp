@@ -6,8 +6,6 @@
 #include <iomanip>
 #include <fstream>
 #include <random>
-#include <complex>
-#include <array>
 #include <cassert>
 #include <vector>
 #include <string>
@@ -16,7 +14,6 @@
 #include <omp.h>
 #endif
 
-using Complex = std::complex<double>;
 using uint = unsigned int;
 using Idx = std::size_t;
 
