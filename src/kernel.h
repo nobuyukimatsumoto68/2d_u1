@@ -1,3 +1,5 @@
+// FOR FT-HMC
+
 class Kernel {
 public:
   const Lattice& lat;
@@ -123,6 +125,7 @@ public:
     return res;
   }
 
+  // d^2_x d_y K
   double dd_d( const ScalarField& phi,
                const Coord& x0, const uint mu0,
                const Coord& y0, const uint nu0 ) const& {

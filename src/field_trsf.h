@@ -1,21 +1,21 @@
 class FieldTrsf {
 public:
   const Lattice& lat;
-  const Kernel& Stilde;
+  const Kernel& ker;
   const double eps;
   const int ITER_MAX = 1000;
 
   FieldTrsf
   (
    const Lattice& lat_,
-   const Kernel& Stilde_,
+   const Kernel& ker_,
    const double eps_
    )
     : lat(lat_)
-    , Stilde(Stilde_)
+    , ker(ker_)
     , eps(eps_)
   {
-    assert(&lat==&Stilde.lat);
+    assert(&lat==&ker.lat);
     assert(eps<0.5);
   };
 
@@ -38,9 +38,9 @@ public:
    const uint mu
    ) const& {
     ScalarField res(phi);
-    const ScalarField dStilde = Stilde.grad(phi,is_even,mu);
+    const ScalarField dker = ker.grad(phi,is_even,mu);
 
-    res += dStilde * eps;
+    res += dker * eps;
     res.proj_u1();
 
     return res;
@@ -52,7 +52,7 @@ public:
    const bool is_even,
    const uint mu
    ) const& {
-    ScalarField X(Stilde.grad(phi, is_even, mu));
+    ScalarField X(ker.grad(phi, is_even, mu));
     ScalarField res(phi);
 
     for(int i=0; i<ITER_MAX; ++i){
@@ -60,7 +60,7 @@ public:
       res -= X * eps;
 
       ScalarField Xold(X);
-      X = Stilde.grad(res, is_even, mu);
+      X = ker.grad(res, is_even, mu);
       Xold -= X;
 
       if( std::sqrt( Xold.squaredNorm()/Xold.size )<1.0e-12 ) break;
@@ -96,7 +96,7 @@ public:
             x.shift(0,dx0);
             x.shift(1,dx1);
             if(x.is_even()==is_even) {
-              sum += Stilde.hess(phi,y,nu,x,mu)*dS(x,mu);
+              sum += ker.hess(phi,y,nu,x,mu)*dS(x,mu);
             }
           }
         }
@@ -118,7 +118,7 @@ public:
 
     for(Idx gi=0; gi<lat.vol; ++gi) { // y
       const Coord x(lat,gi);
-      if(x.is_even()==is_even) res *= 1.0+eps*Stilde.hess(phi,x,mu,x,mu);
+      if(x.is_even()==is_even) res *= 1.0+eps*ker.hess(phi,x,mu,x,mu);
     }
     return res;
   }
@@ -140,8 +140,8 @@ public:
         x.shift(1,dx1);
         if(x.is_even()!=is_even) continue;
 
-        double tmp = eps * Stilde.dd_d(phi,x,mu,y,nu);
-        tmp /= 1.0 + eps * Stilde.hess(phi,x,mu,x,mu);
+        double tmp = eps * ker.dd_d(phi,x,mu,y,nu);
+        tmp /= 1.0 + eps * ker.hess(phi,x,mu,x,mu);
 
         res += tmp;
       }
@@ -150,7 +150,7 @@ public:
     return res;
   }
 
-  void dS
+  void force
   (
    ScalarField& dSp,
    const ScalarField& dS,

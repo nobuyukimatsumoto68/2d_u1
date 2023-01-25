@@ -86,21 +86,21 @@ int main(){
   const Lattice lat(dimension, lattice_size);
   std::clog << lat.info() << std::endl;
 
-  const WilsonAction S(lat,beta);
-  std::clog << S.info() << std::endl;
+  const WilsonAction Sw(lat,beta);
+  std::clog << Sw.info() << std::endl;
   const Corr corr(lat);
 
   Rnd rnd(lat, dimension, seed_1);
   std::clog << rnd.info() << std::endl;
 
 
-#if IS_FTHMC
-  Kernel Stilde(lat);
-  FieldTrsf trsf(lat,Stilde,eps_W);
-  FT_HMC ft_hmc(lat,S,trsf,Stilde,rnd,eps,nsteps,seed_2,nsteps_W);
+#if ISw_FTHMC
+  Kernel ker(lat);
+  FieldTrsf trsf(lat,ker,eps_W);
+  FT_HMC ft_hmc(lat,Sw,trsf,ker,rnd,eps,nsteps,seed_2,nsteps_W);
   std::clog << ft_hmc.info() << std::endl;
 #else
-  HMC hmc(lat, S, rnd, eps, nsteps, seed_2);
+  HMC hmc(lat, Sw, rnd, eps, nsteps, seed_2);
   std::clog << hmc.info() << std::endl;
 #endif
 

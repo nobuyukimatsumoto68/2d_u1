@@ -1,0 +1,544 @@
+\documentclass[12pt]{article}
+
+\setlength{\topmargin}{-3pc}
+\setlength{\evensidemargin}{-.5pc}
+\setlength{\oddsidemargin}{-.5pc}
+\setlength{\textwidth}{39pc}
+\setlength{\textheight}{55.5pc}
+\baselineskip=\normalbaselineskip
+\renewcommand{\baselinestretch}{1.2}
+\setlength{\parskip}{0.25\baselineskip}
+
+\usepackage{mathrsfs,amsbsy,amssymb,latexsym,amsfonts,amsmath,amsthm}
+\usepackage[nosort]{cite}
+
+\usepackage{bm}
+\usepackage{graphicx} %new
+\allowdisplaybreaks[1]
+
+\makeatletter
+\catcode`\@=11
+\@addtoreset{equation}{section}
+\renewcommand{\theequation}{\thesection.\arabic{equation}}
+\def\@seccntformat#1{\csname the#1\endcsname.~~}
+\makeatother
+
+\begin{document}
+\begin{titlepage}
+  \renewcommand{\thefootnote}{\fnsymbol{footnote}}
+  % \begin{flushright}
+  %   preprint****
+  % \end{flushright}
+  \vspace*{1.0cm}
+
+\begin{center}
+  {\Large \bf
+    FT-HMC code for 2D $U(1)$
+  }
+  \vspace{1.0cm}
+
+  \centerline{
+    {Nobuyuki Matsumoto}% %
+    \footnote{E-mail address: 
+      nobuyuki.matsumoto@riken.jp}
+  }
+
+  % \vskip 0.8cm
+  % {\it RIKEN/BNL Research center, Brookhaven National Laboratory,
+  %   Upton, NY 11973, USA}
+  \vskip 1.2cm
+
+  \end{center}
+
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+  \begin{abstract}
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    Brief description of the code.
+    Many features mimic the qlat \cite{qlat}.
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+  \end{abstract}
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+\end{titlepage}
+
+\pagestyle{empty}
+\pagestyle{plain}
+
+\tableofcontents
+\setcounter{footnote}{0}
+
+\section{Physical system}
+\label{sec:sys}
+
+\noindent \underline{Path integral}\newline
+$U(1)$ lattice gauge theory on $T^2$:
+\begin{align}
+  Z_{\beta,\theta} \equiv \int(dU)\, e^{-S(U) + i \theta Q(U)},
+\end{align}
+where $U_{x,\mu}$ are $U(1)$-valued link variables
+(see figure~\ref{fig:lat}):
+\begin{align}
+  U_{x,\mu} = e^{i\phi_{x,\mu}}
+\end{align}
+\begin{figure}[htb]
+  \centering
+  \includegraphics[width=70mm]{lattice.pdf}
+  \caption{2D $U(1)$ lattice.}
+  \label{fig:lat}
+\end{figure}
+and $(dU)$ the Haar measure:
+\begin{align}
+  (dU) = \prod_{x,\mu} \Big( \frac{d\phi_{x,\mu}}{2\pi} \Big).
+\end{align}
+We choose as $S(U)$ the Wilson action \cite{Wilson:1974sk}:
+\begin{align}
+  S(U) \equiv
+  -\beta \sum_x \cos \kappa_x
+\end{align}
+and $Q(U)$ the integer-valued topological charge \cite{Luscher:1981zq,Phillips:1985sgx}:
+\begin{align}
+  Q(U) \equiv \frac{1}{2\pi} \sum_x \kappa_x,
+\end{align}
+where $\kappa_x$ is the plaquette angle:
+\begin{align}
+  \kappa_x
+  &\equiv {1\over i}\ln\big(
+  U_{x,0} U_{x+0,1} U_{x+1,0}^\dagger U_{x,1}^\dagger
+  \big)\nonumber\\
+  &= \phi_{x,0} + \phi_{x+0,1} -\phi_{x+1,0} - \phi_{x,1} \quad ({\rm mod} \, 2\pi),
+\end{align}
+where it is assumed that we take the principal branch of the logarithm:
+\begin{align}
+  \kappa_x \in [-\pi,\pi).
+\end{align}
+
+Classically,
+the gauge potential $A_{x,\mu}$ in the continuum is defined as:
+\begin{align}
+  \phi_{x,\mu} = a A_{x,\mu},
+\end{align}
+where $a$ is the lattice spacing.
+By scaling $\beta$ as:
+\begin{align}
+  \beta = \frac{1}{(ag)^2},
+\end{align}
+we have
+\begin{align}
+  S(U) \sim {a^2 \over 2g^2 }\sum_x F_{01}^2 \sim {1\over 4g^2} \int d^2x \,  F_{\mu\nu}^2
+\end{align}
+and
+\begin{align}
+  Q(U) \sim {1\over 2\pi} a^2 \sum_x F_{01} \sim {1\over 2\pi} \int d^2x \, F_{01},
+\end{align}
+where
+\begin{align}
+  F_{\mu\nu} \equiv \partial_\mu A_\nu - \partial_\nu A_\mu.
+\end{align}
+
+% \noindent \underline{Lattice topological charge}\newline
+% Integer type 
+% Non-integer type:
+% \begin{align}
+%   Q^{({\rm sin})} &\equiv -\frac{1}{2\pi} \sum_x \sin \kappa_x \nonumber\\
+%   & =-\frac{1}{2\pi} \sum_x {\rm Im}\,
+%                     \big(
+%                     U_{x,0} U_{x+0,1} U_{x+1,0}^\dagger U_{x,1}^\dagger
+%                     \big).
+% \end{align}
+
+\noindent \underline{Exact solutions}\newline
+We compute the partition function:
+\begin{align}
+  Z_{\beta,\theta}
+  = \int (dU)\, \prod_{x} e^{\beta\cos\kappa_x +\frac{i\theta}{2\pi} \kappa_x}.
+\end{align}
+We can use the Fourier expansion:
+\begin{align}
+  e^{\beta \cos \kappa + \frac{i\theta}{2\pi} \kappa}
+  = \sum_{n\in \mathbb{Z}} \lambda_n(\beta,\theta) e^{in \kappa},
+\end{align}
+where
+\begin{align}
+  \lambda_n(\beta,\theta)
+  &\equiv \int_{-\pi}^\pi {d\kappa \over 2\pi}\,
+    e^{-i \nu \kappa} e^{\beta \cos \kappa} \Big|_{\nu=n-\theta/2\pi} \label{eq:integral} \\
+  &\sim
+    \frac{e^\beta}{\sqrt{2\pi \beta}} \sum_{k\geq 0}
+    (\nu,k)\Big(\frac{-1}{2\beta}\Big)^k
+    \Big|_{\nu=n-\theta/2\pi}
+    \label{eq:asymptotic}
+\end{align}
+with
+\begin{align}
+  (\nu,k) \equiv \frac{\Gamma(\nu+k+1/2)}{k!\, \Gamma(\nu-k+1/2)}
+  = \frac{\{4\nu^2-1^2\}\{4\nu^2-3^2\}\cdots\{4\nu^2-(2k-1)^2\}}{2^{2k}\cdot k!}.
+\end{align}
+For $\theta=0$,
+$\lambda_n(\beta,\theta)$ is identical to the modified Bessel function $I_\nu(\beta)$,
+but they are different generically.\footnote{
+  The integral~\eqref{eq:integral} is an even function of $\nu$,
+  but $I_\nu(\beta)$ is not.
+}
+We now have
+\begin{align}
+  Z_{\beta,\theta}
+  = \int (dU)\, \prod_x \sum_{n_x}
+    \lambda_{n_x}(\beta,\theta)
+    e^{i n_x \kappa_x}
+  = \sum_n \lambda_n(\beta, \theta)^{\hat{V}},
+\end{align}
+where $\hat{V}$ is the lattice volume (in the lattice units).
+% It is a good approximation for large $\beta$:
+% \begin{align}
+%   Z_{\beta,\theta} \sim 
+% \end{align}
+
+We compute some expectation values for the case $\theta=0$.
+The average plaquette can be calculated as
+\begin{align}
+  \langle \cos \kappa_x \rangle
+  &=
+    { 1\over \hat{V}} \frac{d}{d\beta} \ln Z_{\beta,\theta=0} \nonumber\\
+  &=
+    \frac{ \sum_n \big[(I_{n+1}(\beta) + I_{n-1}(\beta))/2\big]
+    \cdot I_n(\beta)^{\hat{V}-1}}
+    {\sum_n I_n(\beta)^{\hat{V}}} \nonumber\\
+  &\to
+    \frac{I_1(\beta)}{I_0(\beta)}
+    \sim \Big(1-\frac{1}{2\beta}\Big) \quad (\beta\to \infty),
+\end{align}
+where we used that $(0,0)=(1,0)=1$, $(0,1)=-1/4$ and $(1,1)=3/4$.
+We define the average energy density by:
+\begin{align}
+  e \equiv \frac{1}{a^4 \hat{V}} \sum_x (1-\cos \kappa_x)
+  \to \frac{1}{2V} \int d^2x\, F_{01}^2 \quad (a\to 0),
+\end{align}
+where $V\equiv a^2 \hat{V}$ is the physical volume of the system.
+This is actually a divergent quantity as can be seen from that:
+\begin{align}
+  \langle e \rangle \sim \frac{g^2}{2a^2}.
+\end{align}
+% The UV fluctuation is so strong that the energy is divergent.
+% This is reflected to the fact that
+It is also notable that
+there is no correlation length in this system,
+which can be seen from the above calculation by
+modifying $\beta$ to $\beta_x$ and by taking
+the derivatives with respect to $\beta_x$:
+\begin{align}
+  &\langle \cos^2 \kappa_x \rangle
+  =
+    \frac{ \sum_n \big[(I_{n+2}(\beta) + I_{n}(\beta)) + I_{n-2}(\beta))/4\big]
+    \cdot I_n(\beta)^{\hat{V}-1}}
+    {\sum_n I_n(\beta)^{\hat{V}}}, \\
+  &\langle \cos \kappa_x \cos \kappa_y \rangle
+  =
+    \frac{ \sum_n \big[(I_{n+1}(\beta) + I_{n-1}(\beta))^2/4\big]
+    \cdot I_n(\beta)^{\hat{V}-2}}
+    {\sum_n I_n(\beta)^{\hat{V}}} \quad (x\neq y).
+\end{align}
+
+We also calculate the susceptibility:
+\begin{align}
+  \chi_Q
+  & \equiv {1\over V} \langle Q^2 \rangle \nonumber\\
+  &=
+    -{ 1\over V} \frac{d^2}{d\theta^2} \ln Z_{\beta,\theta}\Big|_{\theta=0}
+    \nonumber\\
+  &= -{ 1\over V} \frac{1}{Z_{\beta,\theta}} \hat{V}
+    \sum_n \lambda_n^{\hat{V}-1} \cdot \frac{d^2\lambda_n}{d\theta^2}\Big|_{\theta=0} \nonumber\\
+  &\sim
+    -{ 1\over a^2}
+    {1\over\lambda_0(\beta,\theta)}
+    \frac{d^2\lambda_0}{d\theta^2}
+    \Big|_{\theta=0},
+\end{align}
+where we used the fact $(d\lambda_n/d\theta) |_{\theta=0} = 0$.
+To get the continuum limit, we take
+the derivative of eq.~\eqref{eq:asymptotic} with respect to $\nu$.
+Using the polygamma function:
+\begin{align}
+  \psi^{(m)}(z) \equiv \frac{d^m}{dz^m} \ln \Gamma(z),
+\end{align}
+we have:
+\begin{align}
+  &(2\pi)\frac{d}{d\theta}\lambda_n(\beta,\theta)
+    \sim
+    \frac{e^\beta}{\sqrt{2\pi \beta}} \sum_{k\geq 0}
+    (\nu,k) A(\nu,k)
+    \Big(\frac{-1}{2\beta}\Big)^k
+    \Big|_{\nu=n-\theta/2\pi}, \\
+  &(2\pi)^2\frac{d^2}{d\theta^2}\lambda_n(\beta,\theta)
+    \sim
+    \frac{e^\beta}{\sqrt{2\pi \beta}} \sum_{k\geq 0}
+    (\nu,k)
+    \big\{
+    A(\nu,k)^2 + B(\nu,k)
+    \big\}
+    \Big(\frac{-1}{2\beta}\Big)^k
+    \Big|_{\nu=n-\theta/2\pi}
+\end{align}
+with
+\begin{align}
+  A(\nu, k) &\equiv \psi^{(0)}(\nu+k+1/2)-\psi^{(0)}(\nu+k-1/2), \\
+  B(\nu, k) &\equiv \psi^{(1)}(\nu+k+1/2)-\psi^{(1)}(\nu+k-1/2).
+\end{align}
+Therefore,
+\begin{align}
+  \chi_Q
+  &\sim
+  -{ 1\over a^2}
+  {1\over I_0(\beta)}
+  \frac{d^2\lambda_0}{d\theta^2}
+    \Big|_{\theta=0} \nonumber\\
+  &\sim
+    -{ 1\over a^2} \cdot 1 \cdot
+    \Big({-1\over 4}\Big)\cdot (-8) \cdot \Big({-1\over 2\beta}\Big)
+    =g^2,
+\end{align}
+where we used that $A(0,0)=A(0,1)=0$, $B(0,0)=0$ and $B(0,1)=-8$.
+The susceptibility has a finite value in the continuum limit.
+
+
+
+\section{Field-transformed HMC}
+\label{sec:ft-hmc}
+
+The contents expressed here was
+first developed by \cite{Luscher:2009eq} for $SU(3)$ on $T^4$.
+
+\noindent \underline{Transformation}
+\begin{align}
+  U_{x,\mu} \to U_{x,\mu}^{(\epsilon)} \equiv \mathcal{F}_\epsilon(U)_{x,\mu}
+  \equiv
+  e^{\epsilon \tilde\partial_{x,\mu} K(U)} U_{x,\mu}.
+  \label{eq:trsf}
+\end{align}
+We choose the kernel $K(U)$ to be the plaquettes:
+\begin{align}
+  K(U) = \sum_{x} \cos\kappa_{x}.
+  \label{eq:tilde_s}
+\end{align}
+We recursively define for $\ell \geq 1$:
+\begin{align}
+  S_{\ell\epsilon}(U) \equiv
+  S_{(\ell-1)\epsilon} (\mathcal{F}_\epsilon(U))
+  - \ln \det \mathcal{F}_{\epsilon*}(U),
+  \label{eq:action_ell}
+\end{align}
+where $S_0(U)=S(U)$
+and $\mathcal{F}_{\epsilon *}(U)$ is
+the Jacobian of the transformation~\eqref{eq:trsf}.
+By acting
+$d\equiv \sum_{x,\mu}d\phi_{x,\mu} \partial_{x,\mu}$
+to eq.~\eqref{eq:trsf}, we find
+\begin{align}
+  \mathcal{F}_{\epsilon *}(U)_{x,\mu|y,\nu}
+  =\delta_{xy}\delta_{\mu\nu}
+  + \epsilon \partial_{y,\nu} \partial_{x,\mu} K(U).
+  \label{eq:jacobian}
+\end{align}
+To the leading order in $\epsilon$,
+\begin{align}
+  S_{\ell\epsilon}(U) =
+  S_{(\ell-1)\epsilon}(U)
+  +
+  \epsilon \sum_{x,\mu}
+  \partial_{x,\mu}K(U) \partial_{x,\mu}S(U)
+  -
+  \epsilon \sum_{x,\mu}
+  \partial_{x,\mu}^2 K(U).
+\end{align}
+Explicitly,
+\begin{align}
+  S_{\ell\epsilon}(U)
+  =
+  S_{(\ell-1)\epsilon}(U) + \epsilon \sum_{x} \Big[
+  4 \beta \sin^2\kappa_x
+  - \beta \sum_{\mu=\pm 0,\pm1} \sin\kappa_{x+\mu} \sin \kappa_x
+  + 4 \cos\kappa_x
+  \Big].
+\end{align}
+Note that, from eq.~\eqref{eq:jacobian},
+\begin{align}
+  \partial_{y,\nu}
+  =\partial_{x,\mu}^{(\epsilon)}
+  \mathcal{F}_{\epsilon *}(U)_{x,\mu|y,\nu}.
+  \label{eq:deriv_law}
+\end{align}
+Therefore, from eq.~\eqref{eq:action_ell},
+\begin{align}
+  \partial_{y,\nu} S_{\ell \epsilon}(U)
+  &=
+    \sum_{x,\mu}
+    \big[\delta_{xy}\delta_{\mu\nu}
+    + \epsilon \partial_{y,\nu} \partial_{x,\mu}
+    K(U)
+    \big]
+    \partial_{x,\mu}^{(\epsilon)}
+    S_{(\ell-1) \epsilon}(U^{(\epsilon)}) 
+    - {\rm tr} \big[\mathcal{F}_{\epsilon *}(U)^{-1}
+    \partial_{y,\nu} \mathcal{F}_{\epsilon *}(U) \big].
+    \label{eq:force_prop2}
+\end{align}
+
+In practice, we deal with finite $\epsilon$.
+To ensure that the map is invertible,
+we perform the even/odd partitioning.
+In terms of the angle variables,
+the transformation can be rewritten as:
+\begin{align}
+  \phi_{x,\mu}^{(\epsilon)} =
+  \phi_{x,\mu}
+  -
+  \epsilon (\sin \kappa_{x'} - \sin \kappa_{x''}), \label{eq:thetaeps}
+\end{align}
+where
+\begin{align}
+  x' &= x,  \, x'' = x-1 \quad (\mu=0) \\
+  x' &= x-0, \, x'' = x \quad (\mu=1).
+\end{align}
+To invert eq.~\eqref{eq:thetaeps},
+we rewrite the equation as:
+\begin{align}
+  f(X) = Z_{x,\mu}(\phi)
+  |_{\phi = \phi^{(\epsilon)}-\epsilon X}, \quad
+  X=f(X),
+\end{align}
+where
+\begin{align}
+  Z_{x,\mu}(\phi) \equiv
+  \partial_{x,\mu} K(U)
+  = -\sin \kappa_{x'} + \sin \kappa_{x''}.
+\end{align}
+Then, for $\epsilon<1/2$ the map $f$ defines
+the contraction mapping because:
+\begin{align}
+  |f(X)-f(Y)|
+  &=
+    |-\sin(\varphi+\epsilon X)+\sin(\varphi'-\epsilon X)
+    +\sin(\varphi+\epsilon Y)-\sin(\varphi'-\epsilon Y)| \nonumber\\
+  &=
+    \Big|-2 \cos\Big(\varphi + \frac{\epsilon}{2}(X-Y)\Big) \sin\Big(\frac{\epsilon}{2}(X-Y)\Big) \\
+  &~~~~~~~~~~~~~~
+    + 2 \cos\Big(\varphi' + \frac{\epsilon}{2}(X-Y)\Big) \sin\Big(\frac{\epsilon}{2}(X-Y)\Big)\Big| \nonumber\\
+  \leq 2 \epsilon |X-Y|.
+\end{align}
+% Under the partitioning,
+% the force coming from the Jacobian can be simplified to:
+% \begin{align}
+%   {\rm tr} \big[\mathcal{F}_{\epsilon *}(U)^{-1} \partial_{y,\nu} \mathcal{F}_{\epsilon *}(U) \big]
+%   &=
+%     [1 + \epsilon (\cos \kappa_{y'}+\cos \kappa_{y''})]^{-1}
+%     \epsilon (\sin \kappa_{y'}-\sin \kappa_{y''})
+%     \nonumber\\
+%   &+
+%     \sum_{\kappa_{y'}\ni(x,\mu)\neq(y,\nu)}[1 + \epsilon (\cos \kappa_{x'}+\cos \kappa_{x''})]^{-1}
+%     (-1)^\Delta\epsilon \sin \kappa_{y'}
+%     \nonumber\\
+%   &+
+%     \sum_{\kappa_{y''}\ni(x,\mu)\neq(y,\nu)}[1 + \epsilon (\cos \kappa_{x'}+\cos \kappa_{x''})]^{-1}
+%     (-1)^\Delta\epsilon \sin \kappa_{y''}.
+% \end{align}
+
+
+\section{Code}
+\label{sec:code}
+
+The code consists of the {\tt main.c} and the following
+header files:
+\begin{description}
+\item[util.h] some utility functions (print functions for vectors, projection from $\mathbb{R}$ to $U(1)$).
+\item[lattice.h] defines the {\tt Lattice} class, which describes the geometry of the lattice.
+\item[coord.h] defines the {\tt Coord} class, which describes a point $x$ on the lattice.
+\item[scalar\_field.h] defines the {\tt ScalarField} class, which describes the field $\phi_{x,\mu}$ on the lattice. We use it for the angular variables.
+\item[action.h] defines the {\tt WilsonAction} class, which describes the action function $S$.
+\item[corr.h] defines the {\tt Corr} class, which gives the correlator functions $\cos\kappa_x\cdot\cos\kappa_y$.
+\item[rnd.h] defines the {\tt Rnd} class, which gives a set of mt19937 generators on each site or link.
+\item[hmc.h] defines the {\tt HMC} class, which gives the {\it ordinary} HMC algorithm.
+\item[kernel.h] defines the {\tt Kernel} class, which describes the kernel $K$ for the field transformations.
+\item[field\_trsf.h] defines the {\tt FieldTrsf} class, which describes the infinitesimal map $\cal{F}_\epsilon$.
+\item[ft\_hmc.h] defines the {\tt FT\_HMC} class, which gives the FT-HMC algorithm.
+\end{description}
+
+The present code calculates and records the
+\begin{itemize}
+\item average plaquette
+\item two-point functions
+\item topological charge.
+\end{itemize}
+The plaquette and the topological charge are recorded for both the physical field $U$ and the auxiliary field $V$.
+
+The code is aimed to be run on laptops and uses {\tt c++17} for {\tt filesystem}.
+The remaining part only uses {\tt c++11}.
+It can run with openmp. No MPI calls.
+It generates {\tt 500 configurations} with two-step Wilson-flowed HMC in {\tt 30 sec} for $8\times 8$ lattice on my workstation (with OpenMP).
+It creates {\tt ./result/} directory, in which the observable data are stored, and a few log files.
+The contents written in this paragraph are mostly described in {\tt main.c}.
+
+One can compile and run the code with {\tt make IS\_FTHMC=0; make run}.
+The included {\tt analysis.ipynb} can be used to analyze observable data. The exact solutions (or their approximated functions) are written here for the checks.
+
+
+
+% \section*{Acknowledgments}
+% \appendix
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+\baselineskip=0.9\normalbaselineskip
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+\begin{thebibliography}{99}
+  \setlength{\itemsep}{-2pt}
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+
+  % \cite{qlat}
+\bibitem{qlat}
+  L.~Jin,
+  ``Qlattice,''
+  https://github.com/jinluchang/Qlattice
+
+%\cite{Wilson:1974sk}
+\bibitem{Wilson:1974sk}
+K.~G.~Wilson,
+``Confinement of Quarks,''
+Phys. Rev. D \textbf{10}, 2445-2459 (1974)
+doi:10.1103/PhysRevD.10.2445
+%5938 citations counted in INSPIRE as of 16 Jan 2023
+
+%\cite{Luscher:1981zq}
+\bibitem{Luscher:1981zq}
+M.~Luscher,
+``Topology of Lattice Gauge Fields,''
+Commun. Math. Phys. \textbf{85}, 39 (1982)
+doi:10.1007/BF02029132
+%299 citations counted in INSPIRE as of 10 Jan 2023
+
+%\cite{Phillips:1985sgx}
+\bibitem{Phillips:1985sgx}
+A.~Phillips,
+``Characteristic Numbers of U(1) Valued Lattice Gauge Fields,''
+Annals Phys. \textbf{161}, 399-422 (1985)
+doi:10.1016/0003-4916(85)90086-7
+%27 citations counted in INSPIRE as of 10 Jan 2023
+
+%\cite{Luscher:2009eq}
+\bibitem{Luscher:2009eq}
+M.~Luscher,
+``Trivializing maps, the Wilson flow and the HMC algorithm,''
+Commun. Math. Phys. \textbf{293}, 899-919 (2010)
+doi:10.1007/s00220-009-0953-7
+[arXiv:0907.5491 [hep-lat]].
+%291 citations counted in INSPIRE as of 17 Jan 2023
+
+
+\end{thebibliography}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+
+\end{document}

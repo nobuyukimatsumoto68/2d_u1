@@ -1,7 +1,7 @@
 class HMC {
 public:
   const Lattice& lat;
-  const WilsonAction& S;
+  const WilsonAction& Sw;
   Rnd& rnd_phi;
   const double eps;
   const int nsteps;
@@ -22,7 +22,7 @@ public:
   HMC
   (
    const Lattice& lat_,
-   const WilsonAction& S_,
+   const WilsonAction& Sw_,
    Rnd& rnd_phi_,
    const double eps_,
    const int nsteps_,
@@ -30,14 +30,14 @@ public:
    const bool is_random_ = false
    )
     : lat(lat_)
-    , S(S_)
+    , Sw(Sw_)
     , rnd_phi(rnd_phi_)
     , eps(eps_)
     , nsteps(nsteps_)
     , seed(get_seed(seed_,is_random_))
     , rand01(0.0,1.0)
   {
-    assert(&lat==&S.lat);
+    assert(&lat==&Sw.lat);
     assert(&lat==&rnd_phi_.lat);
 
     std::mt19937_64 gen;
@@ -65,13 +65,13 @@ public:
    ScalarField& pi,
    const double eps
    ) const& {
-    ScalarField dS = S.grad(phi);
+    ScalarField dS = Sw.grad(phi);
     pi += dS * (-0.5*eps);
 
     phi += pi * eps;
     phi.proj_u1();
 
-    dS = S.grad(phi);
+    dS = Sw.grad(phi);
     pi += dS * (-0.5*eps);
   }
 
@@ -88,7 +88,7 @@ public:
    ) const& {
     double res = 0.0;
     res += 0.5 * pi.squaredNorm();
-    res += S(phi);
+    res += Sw(phi);
     return res;
   }
 

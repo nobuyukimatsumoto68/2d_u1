@@ -1,7 +1,7 @@
 class FT_HMC {
 public:
   const Lattice& lat;
-  const WilsonAction& S;
+  const WilsonAction& Sw;
   const FieldTrsf& trsf;
   const Kernel& kernel;
   Rnd& rnd_phi;
@@ -25,7 +25,7 @@ public:
   FT_HMC
   (
    const Lattice& lat_,
-   const WilsonAction& S_,
+   const WilsonAction& Sw_,
    const FieldTrsf& trsf_,
    const Kernel& kernel_,
    Rnd& rnd_phi_,
@@ -36,7 +36,7 @@ public:
    const bool is_random_ = false
    )
     : lat(lat_)
-    , S(S_)
+    , Sw(Sw_)
     , trsf(trsf_)
     , kernel(kernel_)
     , rnd_phi(rnd_phi_)
@@ -46,7 +46,7 @@ public:
     , nsteps_flow(nsteps_flow_)
     , rand01(0.0,1.0)
   {
-    assert(&lat==&S.lat);
+    assert(&lat==&Sw.lat);
     assert(&lat==&rnd_phi_.lat);
 
     std::mt19937_64 gen;
@@ -77,7 +77,7 @@ public:
    ScalarField& pi,
    const double eps
    ) const& {
-    ScalarField dS_U = S.grad(phi_U);
+    ScalarField dS_U = Sw.grad(phi_U);
     ScalarField dS_V(dS_U);
 
     ScalarField phi_V(phi_U);
@@ -85,12 +85,12 @@ public:
       for(int mu=lat.dim-1; mu>=0; --mu) {
         bool is_even = false;
         phi_V = trsf.inv(phi_V,is_even,mu);
-        trsf.dS(dS_V, dS_U, phi_V, is_even, mu);
+        trsf.force(dS_V, dS_U, phi_V, is_even, mu);
         dS_U = dS_V;
 
         is_even = true;
         phi_V = trsf.inv(phi_V,is_even,mu);
-        trsf.dS(dS_V, dS_U, phi_V, is_even, mu);
+        trsf.force(dS_V, dS_U, phi_V, is_even, mu);
         dS_U = dS_V;
       }
     }
@@ -110,19 +110,19 @@ public:
       }
     }
 
-    dS_U = S.grad(phi_U);
+    dS_U = Sw.grad(phi_U);
 
     phi_V = phi_U;
     for(int i=nsteps_flow-1; i>=0; --i){
       for(int mu=lat.dim-1; mu>=0; --mu) {
         bool is_even = false;
         phi_V = trsf.inv(phi_V,is_even,mu);
-        trsf.dS(dS_V,dS_U,phi_V,is_even,mu);
+        trsf.force(dS_V,dS_U,phi_V,is_even,mu);
         dS_U = dS_V;
 
         is_even = true;
         phi_V = trsf.inv(phi_V,is_even,mu);
-        trsf.dS(dS_V,dS_U,phi_V,is_even,mu);
+        trsf.force(dS_V,dS_U,phi_V,is_even,mu);
         dS_U = dS_V;
       }
     }
@@ -146,7 +146,7 @@ public:
    ) const& {
     double res = 0.0;
     res += 0.5 * pi.squaredNorm();
-    res += S(phi_U);
+    res += Sw(phi_U);
     res -= std::log(trsf.star_det(phi_V,is_even,mu));
     return res;
   }
@@ -156,7 +156,7 @@ public:
    const ScalarField& phi_U
    ) const& {
     double res = 0.0;
-    res += S(phi_U);
+    res += Sw(phi_U);
 
     ScalarField phi_V(phi_U);
     for(int i=nsteps_flow-1; i>=0; --i){
