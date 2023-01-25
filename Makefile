@@ -1,18 +1,13 @@
-CXX		= g++
-CXXFLAGS	= -O3 -Wall -MMD -MP -std=c++17 # -fopenmp
-# CXXFLAGS	= -O1 -Wall -MMD -MP -std=c++17 -pg
-PROG		= a.out
-SRC		= main.c
+SRC		= main.cpp
+OBJ		= $(SRC:%.cpp=%.o)
+DIR_SRC		= src
+IS_FTHMC	= 0
 
-OBJ		= $(SRC:%.c=%.o)
-DEPS		= $(SRC:%.c=%.d)
--include $(DEPS)
+export SRC OBJ IS_FTHMC
 
-$(OBJ): $(SRC)
-	$(CXX) $(CXXFLAGS) $(CXXDEPFLAGS) $< -o $@
+all:
+	@make -C $(DIR_SRC)
+	@cp $(DIR_SRC)/$(OBJ) .
 
 .PHONY: run
-run:; time ./main.o 2>&1 | tee log
-
-# .PHONY: clean
-# clean:;	rm *.out
+run:; time ./$(OBJ) 2>&1 | tee log

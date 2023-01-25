@@ -115,9 +115,7 @@ public:
    const uint mu
    ) const& {
     double res = 1.0;
-// #ifdef _OPENMP
-// #pragma omp parallel for
-// #endif
+
     for(Idx gi=0; gi<lat.vol; ++gi) { // y
       const Coord x(lat,gi);
       if(x.is_even()==is_even) res *= 1.0+eps*Stilde.hess(theta,x,mu,x,mu);

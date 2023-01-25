@@ -1,5 +1,5 @@
 To run:
-`make; make run`
+`make IS_FTHMC=0; make run`
 
 To analyze: One can use
 `./analysis.ipynb`

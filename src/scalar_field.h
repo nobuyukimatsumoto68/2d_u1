@@ -89,9 +89,6 @@ public:
   }
 
   ScalarField& operator+=( const ScalarField& other ){
-// #ifdef _OPENMP
-// #pragma omp parallel for
-// #endif
     for(Idx gi=0; gi<size; ++gi) (*this)[gi] += other[gi];
     return *this;
   }

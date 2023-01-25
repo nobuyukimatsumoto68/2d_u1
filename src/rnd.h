@@ -29,9 +29,7 @@ public:
     , seed(get_seed(seed_,is_random))
     , rnd(size)
   {
-    std::mt19937_64 gen;
-    gen.seed(seed);
-    for(Idx gi=0; gi<size; ++gi) rnd[gi].seed( gen() );
+    for(Idx gi=0; gi<size; ++gi) rnd[gi].seed( gi+seed );
   };
 
   std::string info() const& {
