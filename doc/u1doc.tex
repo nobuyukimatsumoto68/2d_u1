@@ -464,7 +464,7 @@ header files:
 \item[corr.h] defines the {\tt Corr} class, which gives the correlator functions $\cos\kappa_x\cdot\cos\kappa_y$.
 \item[rnd.h] defines the {\tt Rnd} class, which gives a set of mt19937 generators on each site or link.
 \item[hmc.h] defines the {\tt HMC} class, which gives the {\it ordinary} HMC algorithm.
-\item[kernel.h] defines the {\tt Kernel} class, which describes the kernel $K$ for the field transformations.
+\item[kernel.h] defines the {\tt Kernel} class, which describes the kernel $K$ for the field transformation.
 \item[field\_trsf.h] defines the {\tt FieldTrsf} class, which describes the infinitesimal map $\cal{F}_\epsilon$.
 \item[ft\_hmc.h] defines the {\tt FT\_HMC} class, which gives the FT-HMC algorithm.
 \end{description}
@@ -479,13 +479,15 @@ The plaquette and the topological charge are recorded for both the physical fiel
 
 The code is aimed to be run on laptops and uses {\tt c++17} for {\tt filesystem}.
 The remaining part only uses {\tt c++11}.
-It can run with openmp. No MPI calls.
-It generates {\tt 500 configurations} with two-step Wilson-flowed HMC in {\tt 30 sec} for $8\times 8$ lattice on my workstation (with OpenMP).
-It creates {\tt ./result/} directory, in which the observable data are stored, and a few log files.
-The contents written in this paragraph are mostly described in {\tt main.c}.
+It can be run with openmp. No MPI calls.
+It generates {\tt 500 configurations} with one-step Wilson-flowed HMC in {\tt 30 sec} for $8\times 8$ lattice (without OpenMP).
+It creates {\tt ./result/} directory, in which the observable data are stored, and a log file.
+The contents written in this paragraph are mostly described in {\tt main.cpp}.
 
-One can compile and run the code with {\tt make IS\_FTHMC=0; make run}.
-The included {\tt analysis.ipynb} can be used to analyze observable data. The exact solutions (or their approximated functions) are written here for the checks.
+One can compile and run the ordinary HMC code with {\tt make; make run}.
+To switch to the FT-HMC, one can use {\tt make IS\_FTHMC=1; make run}.
+The included {\tt analysis.ipynb} can be used to analyze observable data.
+The exact solutions (or their approximated functions) are written in the python notebook for checking.
 
 
 
