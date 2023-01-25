@@ -291,9 +291,18 @@ Therefore,
   \frac{d^2\lambda_0}{d\theta^2}
     \Big|_{\theta=0} \nonumber\\
   &\sim
-    -{ 1\over a^2} \cdot 1 \cdot
-    \Big({-1\over 4}\Big)\cdot (-8) \cdot \Big({-1\over 2\beta}\Big)
-    =g^2,
+    -
+    {1\over a^2}
+    \cdot
+    1
+    \cdot
+    \Big({-1\over 4}\Big)\cdot (-8) \cdot
+    \frac{1}{(2\pi)^2}
+    \cdot
+    \Big({-1\over 2\beta}
+    \Big)
+    =
+    \frac{g^2}{(2 \pi)^2},
 \end{align}
 where we used that $A(0,0)=A(0,1)=0$, $B(0,0)=0$ and $B(0,1)=-8$.
 The susceptibility has a finite value in the continuum limit.
@@ -310,7 +319,7 @@ first developed by \cite{Luscher:2009eq} for $SU(3)$ on $T^4$.
 \begin{align}
   U_{x,\mu} \to U_{x,\mu}^{(\epsilon)} \equiv \mathcal{F}_\epsilon(U)_{x,\mu}
   \equiv
-  e^{\epsilon \tilde\partial_{x,\mu} K(U)} U_{x,\mu}.
+  e^{\epsilon \partial_{x,\mu} K(U)} U_{x,\mu}.
   \label{eq:trsf}
 \end{align}
 We choose the kernel $K(U)$ to be the plaquettes:
