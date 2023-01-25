@@ -4,7 +4,7 @@ public:
   const WilsonAction& S;
   const FieldTrsf& trsf;
   const Kernel& kernel;
-  Rnd& rnd_theta;
+  Rnd& rnd_phi;
   const double eps_MD;
   const int nsteps_MD;
   const int seed;
@@ -28,7 +28,7 @@ public:
    const WilsonAction& S_,
    const FieldTrsf& trsf_,
    const Kernel& kernel_,
-   Rnd& rnd_theta_,
+   Rnd& rnd_phi_,
    const double eps_MD_,
    const int nsteps_MD_,
    const int seed_,
@@ -39,7 +39,7 @@ public:
     , S(S_)
     , trsf(trsf_)
     , kernel(kernel_)
-    , rnd_theta(rnd_theta_)
+    , rnd_phi(rnd_phi_)
     , eps_MD(eps_MD_)
     , nsteps_MD(nsteps_MD_)
     , seed(get_seed(seed_,is_random_))
@@ -47,7 +47,7 @@ public:
     , rand01(0.0,1.0)
   {
     assert(&lat==&S.lat);
-    assert(&lat==&rnd_theta_.lat);
+    assert(&lat==&rnd_phi_.lat);
 
     std::mt19937_64 gen;
     gen.seed( seed );
@@ -73,56 +73,56 @@ public:
 
   void leapfrog
   (
-   ScalarField& theta_U,
+   ScalarField& phi_U,
    ScalarField& pi,
    const double eps
    ) const& {
-    ScalarField dS_U = S.grad(theta_U);
+    ScalarField dS_U = S.grad(phi_U);
     ScalarField dS_V(dS_U);
 
-    ScalarField theta_V(theta_U);
+    ScalarField phi_V(phi_U);
     for(int i=nsteps_flow-1; i>=0; --i){
       for(int mu=lat.dim-1; mu>=0; --mu) {
         bool is_even = false;
-        theta_V = trsf.inv(theta_V,is_even,mu);
-        trsf.dS(dS_V, dS_U, theta_V, is_even, mu);
+        phi_V = trsf.inv(phi_V,is_even,mu);
+        trsf.dS(dS_V, dS_U, phi_V, is_even, mu);
         dS_U = dS_V;
 
         is_even = true;
-        theta_V = trsf.inv(theta_V,is_even,mu);
-        trsf.dS(dS_V, dS_U, theta_V, is_even, mu);
+        phi_V = trsf.inv(phi_V,is_even,mu);
+        trsf.dS(dS_V, dS_U, phi_V, is_even, mu);
         dS_U = dS_V;
       }
     }
 
     pi += dS_V * (-0.5*eps);
 
-    theta_V += pi * eps;
-    theta_V.proj_u1();
+    phi_V += pi * eps;
+    phi_V.proj_u1();
 
-    theta_U = theta_V;
+    phi_U = phi_V;
     for(int i=0; i<nsteps_flow; ++i){
       for(uint mu=0; mu<lat.dim; ++mu) {
         bool is_even = true;
-        theta_U = trsf(theta_U,is_even,mu);
+        phi_U = trsf(phi_U,is_even,mu);
         is_even = false;
-        theta_U = trsf(theta_U,is_even,mu);
+        phi_U = trsf(phi_U,is_even,mu);
       }
     }
 
-    dS_U = S.grad(theta_U);
+    dS_U = S.grad(phi_U);
 
-    theta_V = theta_U;
+    phi_V = phi_U;
     for(int i=nsteps_flow-1; i>=0; --i){
       for(int mu=lat.dim-1; mu>=0; --mu) {
         bool is_even = false;
-        theta_V = trsf.inv(theta_V,is_even,mu);
-        trsf.dS(dS_V,dS_U,theta_V,is_even,mu);
+        phi_V = trsf.inv(phi_V,is_even,mu);
+        trsf.dS(dS_V,dS_U,phi_V,is_even,mu);
         dS_U = dS_V;
 
         is_even = true;
-        theta_V = trsf.inv(theta_V,is_even,mu);
-        trsf.dS(dS_V,dS_U,theta_V,is_even,mu);
+        phi_V = trsf.inv(phi_V,is_even,mu);
+        trsf.dS(dS_V,dS_U,phi_V,is_even,mu);
         dS_U = dS_V;
       }
     }
@@ -131,43 +131,43 @@ public:
   }
 
   ScalarField gen_gauss_pi() const& {
-    ScalarField pi(rnd_theta.lat, rnd_theta.mult);
-    for(Idx idx=0; idx<rnd_theta.size; ++idx) pi[idx] = rnd_theta.gauss(idx);
+    ScalarField pi(rnd_phi.lat, rnd_phi.mult);
+    for(Idx idx=0; idx<rnd_phi.size; ++idx) pi[idx] = rnd_phi.gauss(idx);
     return pi;
   }
 
   double H
   (
-   const ScalarField& theta_U,
-   const ScalarField& theta_V,
+   const ScalarField& phi_U,
+   const ScalarField& phi_V,
    const ScalarField& pi,
    const bool is_even,
    const uint mu
    ) const& {
     double res = 0.0;
     res += 0.5 * pi.squaredNorm();
-    res += S(theta_U);
-    res -= std::log(trsf.star_det(theta_V,is_even,mu));
+    res += S(phi_U);
+    res -= std::log(trsf.star_det(phi_V,is_even,mu));
     return res;
   }
 
   double Seff
   (
-   const ScalarField& theta_U
+   const ScalarField& phi_U
    ) const& {
     double res = 0.0;
-    res += S(theta_U);
+    res += S(phi_U);
 
-    ScalarField theta_V(theta_U);
+    ScalarField phi_V(phi_U);
     for(int i=nsteps_flow-1; i>=0; --i){
       for(int mu=lat.dim-1; mu>=0; --mu) {
         bool is_even = false;
-        theta_V = trsf.inv(theta_V,is_even,mu);
-        res -= std::log(trsf.star_det(theta_V,is_even,mu));
+        phi_V = trsf.inv(phi_V,is_even,mu);
+        res -= std::log(trsf.star_det(phi_V,is_even,mu));
 
         is_even = true;
-        theta_V = trsf.inv(theta_V,is_even,mu);
-        res -= std::log(trsf.star_det(theta_V,is_even,mu));
+        phi_V = trsf.inv(phi_V,is_even,mu);
+        res -= std::log(trsf.star_det(phi_V,is_even,mu));
       }
     }
 
@@ -176,34 +176,34 @@ public:
 
   double H
   (
-   const ScalarField& theta_U,
+   const ScalarField& phi_U,
    const ScalarField& pi
    ) const& {
     double res = 0.0;
     res += 0.5 * pi.squaredNorm();
-    res += Seff( theta_U );
+    res += Seff( phi_U );
     return res;
   }
 
-  void evolve(ScalarField& theta_U0,
+  void evolve(ScalarField& phi_U0,
               bool& is_accept, double& dH
               ) & {
-    ScalarField theta_U( theta_U0 );
+    ScalarField phi_U( phi_U0 );
     ScalarField pi = gen_gauss_pi();
 
-    const double Hin = H(theta_U,pi);
+    const double Hin = H(phi_U,pi);
     for(int k=0; k<nsteps_MD; ++k) {
-      leapfrog(theta_U,pi,eps_MD);
+      leapfrog(phi_U,pi,eps_MD);
     }
-    const double Hfi = H(theta_U,pi);
+    const double Hfi = H(phi_U,pi);
 
     const double r = rand01(rnd);
     dH = Hfi-Hin;
     const double a = std::min( 1.0, std::exp(-dH) );
     if( r<a ){
-      theta_U0 = theta_U;
+      phi_U0 = phi_U;
       is_accept=true;
-      theta_U0.proj_u1();
+      phi_U0.proj_u1();
     }
     else is_accept=false;
   }

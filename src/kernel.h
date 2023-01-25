@@ -10,45 +10,45 @@ public:
     : lat(lat_)
   {}
 
-  double kappa( const ScalarField& theta, const Coord& x ) const& {
+  double kappa( const ScalarField& phi, const Coord& x ) const& {
     Coord xp0(x);
     xp0.shift(0,1);
     Coord xp1(x);
     xp1.shift(1,1);
 
     double res = 0.0;
-    res += theta(x,0) + theta(xp0,1) - theta(xp1,0) - theta(x,1);
+    res += phi(x,0) + phi(xp0,1) - phi(xp1,0) - phi(x,1);
     return res;
   }
 
-  double operator()( const ScalarField& theta ) const& {
+  double operator()( const ScalarField& phi ) const& {
     double res = 0.0;
     for(Idx gi=0; gi<lat.vol; ++gi){
       const Coord x(lat, gi);
-      res += std::cos( kappa(theta,x) );
+      res += std::cos( kappa(phi,x) );
     }
     return res;
   }
 
-  double grad( const ScalarField& theta,
+  double grad( const ScalarField& phi,
                const Coord& x, const uint mu ) const& {
     double res = 0.0;
     if(mu==0){
       Coord xm1(x);
       xm1.shift(1,-1);
-      res -= std::sin(kappa(theta,x)) - std::sin(kappa(theta,xm1));
+      res -= std::sin(kappa(phi,x)) - std::sin(kappa(phi,xm1));
     }
     else if(mu==1){
       Coord xm0(x);
       xm0.shift(0,-1);
-      res -= std::sin(kappa(theta,xm0)) - std::sin(kappa(theta,x));
+      res -= std::sin(kappa(phi,xm0)) - std::sin(kappa(phi,x));
     }
     else assert(false);
 
     return res;
   }
 
-  ScalarField grad( const ScalarField& theta,
+  ScalarField grad( const ScalarField& phi,
                     const bool is_even,
                     const uint mu ) const& {
     ScalarField res(lat,2);
@@ -57,13 +57,13 @@ public:
 #endif
     for(Idx gi=0; gi<lat.vol; ++gi){
       const Coord x(lat, gi);
-      if(x.is_even()==is_even) res(gi,mu) = grad( theta, x, mu );
+      if(x.is_even()==is_even) res(gi,mu) = grad( phi, x, mu );
     }
     return res;
   }
 
 
-  double hess( const ScalarField& theta,
+  double hess( const ScalarField& phi,
                const Coord& x0, const uint mu0,
                const Coord& y0, const uint nu0 ) const& {
     double res = 0.0;
@@ -87,15 +87,15 @@ public:
       if(mu==0){
         Coord xm1(x);
         xm1.shift(1,-1);
-        res -= std::cos(kappa(theta,x)) + std::cos(kappa(theta,xm1));
+        res -= std::cos(kappa(phi,x)) + std::cos(kappa(phi,xm1));
       }
       else if(mu==1){
         Coord xm0(x);
         xm0.shift(0,-1);
-        res -= std::cos(kappa(theta,xm0)) + std::cos(kappa(theta,x));
+        res -= std::cos(kappa(phi,xm0)) + std::cos(kappa(phi,x));
       }
     }
-    else if(y==x) res = std::cos(kappa(theta,x));
+    else if(y==x) res = std::cos(kappa(phi,x));
     else if(mu==0){
       Coord xp0(x);
       xp0.shift(0);
@@ -103,12 +103,12 @@ public:
       xp1.shift(1);
       Coord xp0m1(xp0);
       xp0m1.shift(1,-1);
-      if(y==xp0 && nu==1) res = -std::cos(kappa(theta,x));
-      else if(y==xp1 && nu==0) res = std::cos(kappa(theta,x));
+      if(y==xp0 && nu==1) res = -std::cos(kappa(phi,x));
+      else if(y==xp1 && nu==0) res = std::cos(kappa(phi,x));
       else if(y==xp0m1 && nu==1) {
         Coord xm1(x);
         xm1.shift(1,-1);
-        res = std::cos(kappa(theta,xm1));
+        res = std::cos(kappa(phi,xm1));
       }
     }
     else if(mu==1){
@@ -116,14 +116,14 @@ public:
       xp0.shift(0);
       Coord xp1(x);
       xp1.shift(1);
-      if(y==xp0 && nu==1) res = std::cos(kappa(theta,x));
-      else if(y==xp1 && nu==0) res = -std::cos(kappa(theta,x));
+      if(y==xp0 && nu==1) res = std::cos(kappa(phi,x));
+      else if(y==xp1 && nu==0) res = -std::cos(kappa(phi,x));
     }
 
     return res;
   }
 
-  double dd_d( const ScalarField& theta,
+  double dd_d( const ScalarField& phi,
                const Coord& x0, const uint mu0,
                const Coord& y0, const uint nu0 ) const& {
     double res = 0.0;
@@ -150,17 +150,17 @@ public:
       if(mu==0){
         Coord xm1(x);
         xm1.shift(1,-1);
-        res += std::sin(kappa(theta,x)) - std::sin(kappa(theta,xm1));
+        res += std::sin(kappa(phi,x)) - std::sin(kappa(phi,xm1));
       }
       else if(mu==1){
         Coord xm0(x);
         xm0.shift(0,-1);
-        res += std::sin(kappa(theta,xm0)) - std::sin(kappa(theta,x));
+        res += std::sin(kappa(phi,xm0)) - std::sin(kappa(phi,x));
       }
     }
     else if(y==x) {
       if(mu==1) sign = -1.0;
-      res = -std::sin(kappa(theta,x));
+      res = -std::sin(kappa(phi,x));
     }
     else if(mu==0){
       Coord xp0(x);
@@ -169,16 +169,16 @@ public:
       xp1.shift(1);
       Coord xp0m1(xp0);
       xp0m1.shift(1,-1);
-      if(y==xp0 && nu==1) res = std::sin(kappa(theta,x));
+      if(y==xp0 && nu==1) res = std::sin(kappa(phi,x));
       else if(y==xp1 && nu==0) {
         if(is_swapped) sign = -1.0;
-        res = -std::sin(kappa(theta,x));
+        res = -std::sin(kappa(phi,x));
       }
       else if(y==xp0m1 && nu==1) {
         Coord xm1(x);
         xm1.shift(1,-1);
         if(is_swapped) sign = -1.0;
-        res = std::sin(kappa(theta,xm1));
+        res = std::sin(kappa(phi,xm1));
       }
     }
     else if(mu==1){
@@ -188,9 +188,9 @@ public:
       xp1.shift(1);
       if(y==xp0 && nu==1) {
         if(is_swapped) sign = -1.0;
-        res = std::sin(kappa(theta,x));
+        res = std::sin(kappa(phi,x));
       }
-      else if(y==xp1 && nu==0) res = -std::sin(kappa(theta,x));
+      else if(y==xp1 && nu==0) res = -std::sin(kappa(phi,x));
     }
 
     return sign*res;

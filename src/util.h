@@ -26,8 +26,8 @@ std::string print( const std::array<T,n>& v ){
   return ss.str();
 }
 
-double proj_mPi_Pi( const double theta ){
-  double res = theta;
+double proj_mPi_Pi( const double phi ){
+  double res = phi;
 
   while(res>M_PI) res -= 2.0 * M_PI;
   while(res<-M_PI) res += 2.0 * M_PI;

@@ -33,12 +33,12 @@ public:
 
   ScalarField operator()
   (
-   const ScalarField& theta,
+   const ScalarField& phi,
    const bool is_even,
    const uint mu
    ) const& {
-    ScalarField res(theta);
-    const ScalarField dStilde = Stilde.grad(theta,is_even,mu);
+    ScalarField res(phi);
+    const ScalarField dStilde = Stilde.grad(phi,is_even,mu);
 
     res += dStilde * eps;
     res.proj_u1();
@@ -48,15 +48,15 @@ public:
 
   ScalarField inv
   (
-   const ScalarField& theta,
+   const ScalarField& phi,
    const bool is_even,
    const uint mu
    ) const& {
-    ScalarField X(Stilde.grad(theta, is_even, mu));
-    ScalarField res(theta);
+    ScalarField X(Stilde.grad(phi, is_even, mu));
+    ScalarField res(phi);
 
     for(int i=0; i<ITER_MAX; ++i){
-      res = theta;
+      res = phi;
       res -= X * eps;
 
       ScalarField Xold(X);
@@ -65,7 +65,7 @@ public:
 
       if( std::sqrt( Xold.squaredNorm()/Xold.size )<1.0e-12 ) break;
     }
-    res = theta;
+    res = phi;
     res -= X * eps;
     res.proj_u1();
 
@@ -77,7 +77,7 @@ public:
   (
    ScalarField& dS_Fstar,
    const ScalarField& dS,
-   const ScalarField& theta,
+   const ScalarField& phi,
    const bool is_even,
    const uint mu
    ) const& {
@@ -96,7 +96,7 @@ public:
             x.shift(0,dx0);
             x.shift(1,dx1);
             if(x.is_even()==is_even) {
-              sum += Stilde.hess(theta,y,nu,x,mu)*dS(x,mu);
+              sum += Stilde.hess(phi,y,nu,x,mu)*dS(x,mu);
             }
           }
         }
@@ -110,7 +110,7 @@ public:
 
   double star_det
   (
-   const ScalarField& theta,
+   const ScalarField& phi,
    const bool is_even,
    const uint mu
    ) const& {
@@ -118,7 +118,7 @@ public:
 
     for(Idx gi=0; gi<lat.vol; ++gi) { // y
       const Coord x(lat,gi);
-      if(x.is_even()==is_even) res *= 1.0+eps*Stilde.hess(theta,x,mu,x,mu);
+      if(x.is_even()==is_even) res *= 1.0+eps*Stilde.hess(phi,x,mu,x,mu);
     }
     return res;
   }
@@ -126,7 +126,7 @@ public:
 
   double dlndet
   (
-   const ScalarField& theta,
+   const ScalarField& phi,
    const bool is_even,
    const uint mu,
    const Coord& y, const uint nu
@@ -140,8 +140,8 @@ public:
         x.shift(1,dx1);
         if(x.is_even()!=is_even) continue;
 
-        double tmp = eps * Stilde.dd_d(theta,x,mu,y,nu);
-        tmp /= 1.0 + eps * Stilde.hess(theta,x,mu,x,mu);
+        double tmp = eps * Stilde.dd_d(phi,x,mu,y,nu);
+        tmp /= 1.0 + eps * Stilde.hess(phi,x,mu,x,mu);
 
         res += tmp;
       }
@@ -154,18 +154,18 @@ public:
   (
    ScalarField& dSp,
    const ScalarField& dS,
-   const ScalarField& theta,
+   const ScalarField& phi,
    const bool is_even,
    const uint mu
    ) const& {
-    star(dSp, dS, theta, is_even,mu);
+    star(dSp, dS, phi, is_even,mu);
 #ifdef _OPENMP
 #pragma omp parallel for
 #endif
     for(Idx gi=0; gi<lat.vol; ++gi) {
       const Coord y(lat,gi);
       for(uint nu=0; nu<2; ++nu){
-        const double mdlndet = -dlndet(theta,is_even,mu,y,nu);
+        const double mdlndet = -dlndet(phi,is_even,mu,y,nu);
         dSp(y,nu) += mdlndet;
       }
     }

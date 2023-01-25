@@ -48,9 +48,9 @@ public:
 
   double gauss(const Idx idx) & { return normal( rnd[idx] ); }
 
-  void set( ScalarField& theta ) & {
-    for(Idx gi=0; gi<size; ++gi) theta[gi] = gauss(gi);
-    theta.proj_u1();
+  void set( ScalarField& phi ) & {
+    for(Idx gi=0; gi<size; ++gi) phi[gi] = gauss(gi);
+    phi.proj_u1();
   }
 
 };

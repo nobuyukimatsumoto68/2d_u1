@@ -24,56 +24,56 @@ public:
     return ss.str();
   }
 
-  double kappa( const ScalarField& theta, const Coord& x ) const& {
+  double kappa( const ScalarField& phi, const Coord& x ) const& {
     Coord xp0(x);
     xp0.shift(0);
     Coord xp1(x);
     xp1.shift(1);
 
     double res = 0.0;
-    res += theta(x,0) + theta(xp0,1) - theta(xp1,0) - theta(x,1);
+    res += phi(x,0) + phi(xp0,1) - phi(xp1,0) - phi(x,1);
     return res;
   }
 
-  double w0( const ScalarField& theta ) const& {
+  double w0( const ScalarField& phi ) const& {
     double res = 0.0;
 
     for(Idx gi=0; gi<lat.vol; ++gi){
       const Coord x(lat, gi);
-      res += std::cos( kappa(theta,x) );
+      res += std::cos( kappa(phi,x) );
     }
 
     return res;
   }
 
-  double operator()( const ScalarField& theta ) const& {
-    return -beta*w0(theta);
+  double operator()( const ScalarField& phi ) const& {
+    return -beta*w0(phi);
   }
 
-  double grad_w0( const ScalarField& theta,
+  double grad_w0( const ScalarField& phi,
                  const Coord& x, const uint mu ) const& {
     double res = 0.0;
     if(mu==0){
       Coord xm1(x);
       xm1.shift(1,-1);
-      res -= std::sin(kappa(theta,x)) - std::sin(kappa(theta,xm1));
+      res -= std::sin(kappa(phi,x)) - std::sin(kappa(phi,xm1));
     }
     else if(mu==1){
       Coord xm0(x);
       xm0.shift(0,-1);
-      res -= std::sin(kappa(theta,xm0)) - std::sin(kappa(theta,x));
+      res -= std::sin(kappa(phi,xm0)) - std::sin(kappa(phi,x));
     }
     else assert(false);
 
     return res;
   }
 
-  double grad( const ScalarField& theta,
+  double grad( const ScalarField& phi,
                const Coord& x, const uint mu ) const& {
-    return - beta * grad_w0(theta,x,mu);
+    return - beta * grad_w0(phi,x,mu);
   }
 
-  ScalarField grad_w0( const ScalarField& theta ) const& {
+  ScalarField grad_w0( const ScalarField& phi ) const& {
     ScalarField res(lat,2);
 
 #ifdef _OPENMP
@@ -81,11 +81,11 @@ public:
 #endif
     for(Idx gi=0; gi<lat.vol; ++gi){
       const Coord x(lat, gi);
-      for(uint mu=0; mu<2; ++mu) res(gi,mu) = grad_w0( theta, x, mu );
+      for(uint mu=0; mu<2; ++mu) res(gi,mu) = grad_w0( phi, x, mu );
     }
     return res;
   }
 
-  ScalarField grad( const ScalarField& theta ) const& { return grad_w0(theta) * (-beta); }
+  ScalarField grad( const ScalarField& phi ) const& { return grad_w0(phi) * (-beta); }
 
 };

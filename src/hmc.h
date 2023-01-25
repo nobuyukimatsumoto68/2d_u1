@@ -2,7 +2,7 @@ class HMC {
 public:
   const Lattice& lat;
   const WilsonAction& S;
-  Rnd& rnd_theta;
+  Rnd& rnd_phi;
   const double eps;
   const int nsteps;
   const int seed;
@@ -23,7 +23,7 @@ public:
   (
    const Lattice& lat_,
    const WilsonAction& S_,
-   Rnd& rnd_theta_,
+   Rnd& rnd_phi_,
    const double eps_,
    const int nsteps_,
    const int seed_,
@@ -31,14 +31,14 @@ public:
    )
     : lat(lat_)
     , S(S_)
-    , rnd_theta(rnd_theta_)
+    , rnd_phi(rnd_phi_)
     , eps(eps_)
     , nsteps(nsteps_)
     , seed(get_seed(seed_,is_random_))
     , rand01(0.0,1.0)
   {
     assert(&lat==&S.lat);
-    assert(&lat==&rnd_theta_.lat);
+    assert(&lat==&rnd_phi_.lat);
 
     std::mt19937_64 gen;
     gen.seed(seed);
@@ -61,53 +61,53 @@ public:
 
   void leapfrog
   (
-   ScalarField& theta,
+   ScalarField& phi,
    ScalarField& pi,
    const double eps
    ) const& {
-    ScalarField dS = S.grad(theta);
+    ScalarField dS = S.grad(phi);
     pi += dS * (-0.5*eps);
 
-    theta += pi * eps;
-    theta.proj_u1();
+    phi += pi * eps;
+    phi.proj_u1();
 
-    dS = S.grad(theta);
+    dS = S.grad(phi);
     pi += dS * (-0.5*eps);
   }
 
   ScalarField gen_gauss_pi() const& {
-    ScalarField pi(rnd_theta.lat, rnd_theta.mult);
-    for(Idx gi=0; gi<rnd_theta.size; ++gi) pi[gi] = rnd_theta.gauss(gi);
+    ScalarField pi(rnd_phi.lat, rnd_phi.mult);
+    for(Idx gi=0; gi<rnd_phi.size; ++gi) pi[gi] = rnd_phi.gauss(gi);
     return pi;
   }
 
   double H
   (
-   ScalarField& theta,
+   ScalarField& phi,
    ScalarField& pi
    ) const& {
     double res = 0.0;
     res += 0.5 * pi.squaredNorm();
-    res += S(theta);
+    res += S(phi);
     return res;
   }
 
-  void evolve(ScalarField& theta0,
+  void evolve(ScalarField& phi0,
               bool& is_accept, double& dH) & {
-    ScalarField theta(theta0);
+    ScalarField phi(phi0);
     ScalarField pi = gen_gauss_pi();
 
-    const double Hin = H(theta, pi);
-    for(int k=0; k<nsteps; ++k) leapfrog(theta,pi,eps);
-    const double Hfi = H(theta, pi);
+    const double Hin = H(phi, pi);
+    for(int k=0; k<nsteps; ++k) leapfrog(phi,pi,eps);
+    const double Hfi = H(phi, pi);
 
     const double r = rand01(rnd);
     dH = Hfi-Hin;
     const double a = std::min( 1.0, std::exp(-dH) );
     if( r<a ){
-      theta0 = theta;
+      phi0 = phi;
       is_accept=true;
-      theta0.proj_u1();
+      phi0.proj_u1();
     }
     else is_accept=false;
   }

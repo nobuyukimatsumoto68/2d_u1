@@ -112,8 +112,8 @@ int main(){
               << "--------------------" << std::endl;
   }
 
-  ScalarField theta(lat,dimension);
-  rnd.set(theta); // initialized with Gaussian
+  ScalarField phi(lat,dimension);
+  rnd.set(phi); // initialized with Gaussian
 
   double r_mean=0.0;
   bool is_accept=false;
@@ -140,9 +140,9 @@ int main(){
 
 
 #if IS_FTHMC
-    ft_hmc.evolve( theta, is_accept, dH);
+    ft_hmc.evolve( phi, is_accept, dH);
 #else
-    hmc.evolve( theta, is_accept, dH);
+    hmc.evolve( phi, is_accept, dH);
 #endif
 
     /* ------------- */
@@ -151,25 +151,25 @@ int main(){
     of_acc << is_accept << ' ';
     of_dH << dH << ' ';
 
-    of_w0 << corr.w0(theta)/lat.vol;
-    of_top_ch << corr.Q(theta);
+    of_w0 << corr.w0(phi)/lat.vol;
+    of_top_ch << corr.Q(phi);
 
     for(uint dx=0; dx<lat.size[0]; ++dx){
-      of_corr << corr(theta, dx) << ' ';
+      of_corr << corr(phi, dx) << ' ';
     }
 
 #if IS_FTHMC
-    ScalarField theta_V( theta );
+    ScalarField phi_V( phi );
     for(int i=nsteps_W-1; i>=0; --i){
       for(int mu=lat.dim-1; mu>=0; --mu) {
         bool is_even = false;
-        theta_V = trsf.inv(theta_V,is_even,mu);
+        phi_V = trsf.inv(phi_V,is_even,mu);
         is_even = true;
-        theta_V = trsf.inv(theta_V,is_even,mu);
+        phi_V = trsf.inv(phi_V,is_even,mu);
       }
     }
-    of_w0_V << corr.w0(theta_V)/lat.vol;
-    of_top_ch_V << corr.Q(theta_V);
+    of_w0_V << corr.w0(phi_V)/lat.vol;
+    of_top_ch_V << corr.Q(phi_V);
 #endif
 
   }
